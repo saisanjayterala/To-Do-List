@@ -3,13 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Advanced To-Do List v2</title>
+    <title>Professional To-Do List v3</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div class="container">
-        <h1>My Advanced To-Do List</h1>
+        <header>
+            <h1>Professional To-Do List</h1>
+            <div id="dateTime"></div>
+        </header>
         <div class="input-container">
             <input type="text" id="taskInput" placeholder="Enter a new task">
             <input type="date" id="dueDateInput">
@@ -18,15 +22,33 @@
                 <option value="medium">Medium</option>
                 <option value="high">High</option>
             </select>
+            <select id="categoryInput">
+                <option value="personal">Personal</option>
+                <option value="work">Work</option>
+                <option value="shopping">Shopping</option>
+                <option value="other">Other</option>
+            </select>
             <button onclick="addTask()">Add Task</button>
         </div>
         <div class="filter-container">
-            <button onclick="filterTasks('all')">All</button>
+            <button onclick="filterTasks('all')" class="active">All</button>
             <button onclick="filterTasks('active')">Active</button>
             <button onclick="filterTasks('completed')">Completed</button>
+            <select id="categoryFilter" onchange="filterByCategory()">
+                <option value="all">All Categories</option>
+                <option value="personal">Personal</option>
+                <option value="work">Work</option>
+                <option value="shopping">Shopping</option>
+                <option value="other">Other</option>
+            </select>
         </div>
         <ul id="taskList"></ul>
+        <div class="stats">
+            <span id="totalTasks">Total: 0</span>
+            <span id="completedTasks">Completed: 0</span>
+            <span id="pendingTasks">Pending: 0</span>
+        </div>
     </div>
     <script src="script.js"></script>
 </body>
-</html>
+</html>3
