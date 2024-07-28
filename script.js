@@ -1,10 +1,91 @@
-let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+// script.js
+let currentUser = null;
+let tasks = [];
 
+// DOM Elements
+const authPage = document.getElementById('auth-page');
+const mainApp = document.getElementById('main-app');
+const loginForm = document.getElementById('login-form');
+const registerForm = document.getElementById('register-form');
+const showRegisterLink = document.getElementById('show-register');
+const showLoginLink = document.getElementById('show-login');
+const logoutBtn = document.getElementById('logout-btn');
+const userNameSpan = document.getElementById('user-name');
+const darkModeToggle = document.getElementById('darkModeToggle');
+
+// Event Listeners
+loginForm.addEventListener('submit', handleLogin);
+registerForm.addEventListener('submit', handleRegister);
+showRegisterLink.addEventListener('click', toggleAuthForms);
+showLoginLink.addEventListener('click', toggleAuthForms);
+logoutBtn.addEventListener('click', handleLogout);
+darkModeToggle.addEventListener('click', toggleDarkMode);
+
+// Auth Functions
+function handleLogin(e) {
+    e.preventDefault();
+    const email = document.getElementById('login-email').value;
+    const password = document.getElementById('login-password').value;
+    
+    // Simulating a successful login
+    currentUser = { name: 'John Doe', email: email };
+    localStorage.setItem('currentUser', JSON.stringify(currentUser));
+    
+    showMainApp();
+}
+
+function handleRegister(e) {
+    e.preventDefault();
+    const name = document.getElementById('register-name').value;
+    const email = document.getElementById('register-email').value;
+    const password = document.getElementById('register-password').value;
+    const confirmPassword = document.getElementById('register-confirm-password').value;
+    
+    if (password !== confirmPassword) {
+        alert('Passwords do not match');
+        return;
+    }
+    
+    // Simulating a successful registration
+    currentUser = { name: name, email: email };
+    localStorage.setItem('currentUser', JSON.stringify(currentUser));
+    
+    showMainApp();
+}
+
+function handleLogout() {
+    currentUser = null;
+    localStorage.removeItem('currentUser');
+    showAuthPage();
+}
+
+function toggleAuthForms() {
+    document.getElementById('login-form').parentElement.classList.toggle('hidden');
+    document.getElementById('register-box').classList.toggle('hidden');
+}
+
+function showAuthPage() {
+    authPage.classList.remove('hidden');
+    mainApp.classList.add('hidden');
+}
+
+function showMainApp() {
+    authPage.classList.add('hidden');
+    mainApp.classList.remove('hidden');
+    userNameSpan.textContent = currentUser.name;
+    loadTasks();
+    renderTasks();
+    updateStats();
+}
+
+// Task Management Functions
 function addTask() {
     const taskInput = document.getElementById('taskInput');
     const dueDateInput = document.getElementById('dueDateInput');
     const priorityInput = document.getElementById('priorityInput');
     const categoryInput = document.getElementById('categoryInput');
+    const reminderInput = document.getElementById('reminderInput');
+    const taskNotes = document.getElementById('taskNotes');
     
     if (taskInput.value.trim() !== '') {
         const task = {
@@ -14,6 +95,8 @@ function addTask() {
             dueDate: dueDateInput.value,
             priority: priorityInput.value,
             category: categoryInput.value,
+            reminder: reminderInput.value,
+            notes: taskNotes.value,
             createdAt: new Date().toISOString()
         };
         
@@ -35,6 +118,12 @@ function addTask() {
         dueDateInput.value = '';
         priorityInput.value = 'low';
         categoryInput.value = 'personal';
+        reminderInput.value = '';
+        taskNotes.value = '';
+
+        if (task.reminder) {
+            scheduleReminder(task);
+        }
     }
 }
 
@@ -52,7 +141,9 @@ function renderTasks(filteredTasks = tasks) {
                     <span class="due-date">${formatDate(task.dueDate)}</span>
                     <span class="priority">${task.priority}</span>
                     <span class="category">${task.category}</span>
+                    ${task.reminder ? `<span class="reminder">🔔 ${formatDate(task.reminder)}</span>` : ''}
                 </div>
+                ${task.notes ? `<div class="task-notes">${task.notes}</div>` : ''}
             </div>
             <div class="task-actions">
                 <button onclick="toggleTask(${task.id})" class="toggle-btn">
@@ -67,6 +158,18 @@ function renderTasks(filteredTasks = tasks) {
             </div>
         `;
         taskList.appendChild(li);
+    });
+
+    // Initialize drag and drop
+    new Sortable(taskList, {
+        animation: 150,
+        onEnd: function(evt) {
+            const taskId = parseInt(evt.item.querySelector('.toggle-btn').getAttribute('onclick').match(/\d+/)[0]);
+            const task = tasks.find(t => t.id === taskId);
+            tasks.splice(tasks.indexOf(task), 1);
+            tasks.splice(evt.newIndex, 0, task);
+            saveTasks();
+        }
     });
 }
 
@@ -158,6 +261,16 @@ function setActiveFilter(filter) {
     document.querySelector(`button[onclick="filterTasks('${filter}')"]`).classList.add('active');
 }
 
+function searchTasks() {
+    const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+    const filteredTasks = tasks.filter(task => 
+        task.text.toLowerCase().includes(searchTerm) ||
+        task.category.toLowerCase().includes(searchTerm) ||
+        task.priority.toLowerCase().includes(searchTerm)
+    );
+    renderTasks(filteredTasks);
+}
+
 function updateStats() {
     const totalTasks = tasks.length;
     const completedTasks = tasks.filter(t => t.completed).length;
@@ -180,12 +293,17 @@ function animateNumber(elementId, finalValue) {
 }
 
 function saveTasks() {
-    localStorage.setItem('tasks', JSON.stringify(tasks));
+    localStorage.setItem(`tasks_${currentUser.email}`, JSON.stringify(tasks));
+}
+
+function loadTasks() {
+    const storedTasks = localStorage.getItem(`tasks_${currentUser.email}`);
+    tasks = storedTasks ? JSON.parse(storedTasks) : [];
 }
 
 function formatDate(dateString) {
     if (!dateString) return '';
-    const options = { year: 'numeric', month: 'short', day: 'numeric' };
+    const options = { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' };
     return new Date(dateString).toLocaleDateString(undefined, options);
 }
 
@@ -203,74 +321,64 @@ function showConfetti() {
     });
 }
 
-function animateStats() {
-    gsap.from(".stat-item", {
-        y: 20,
-        opacity: 0,
-        duration: 0.5,
-        stagger: 0.2,
-        ease: "power2.out"
-    });
-}
+function scheduleReminder(task) {
+    const reminderTime = new Date(task.reminder).getTime();
+    const now = new Date().getTime();
+    const timeUntilReminder = reminderTime - now;
 
-function animateTaskList() {
-    gsap.from("#taskList li", {
-        opacity: 0,
-        y: 20,
-        duration: 0.5,
-        stagger: 0.1,
-        ease: "power2.out"
-    });
-}
-
-document.querySelectorAll('.filter-container button').forEach(button => {
-    button.addEventListener('click', function() {
-        gsap.from(this, {
-            scale: 0.9,
-            duration: 0.3,
-            ease: "elastic.out(1, 0.5)"
-        });
-    });
-});
-
-document.querySelector('.add-task-btn').addEventListener('mouseover', function() {
-    gsap.to(this, {
-        scale: 1.1,
-        duration: 0.3,
-        ease: "power2.out"
-    });
-});
-
-document.querySelector('.add-task-btn').addEventListener('mouseout', function() {
-    gsap.to(this, {
-        scale: 1,
-        duration: 0.3,
-        ease: "power2.out"
-    });
-});
-
-document.addEventListener('mousemove', function(e) {
-    const appContainer = document.querySelector('.app-container');
-    const mouseX = e.clientX / window.innerWidth - 0.5;
-    const mouseY = e.clientY / window.innerHeight - 0.5;
-    
-    gsap.to(appContainer, {
-        rotationY: mouseX * 10,
-        rotationX: -mouseY * 10,
-        duration: 0.5,
-        ease: "power2.out"
-    });
-});
-
-document.getElementById('taskInput').addEventListener('keypress', function(e) {
-    if (e.key === 'Enter') {
-        addTask();
+    if (timeUntilReminder > 0) {
+        setTimeout(() => {
+            if (Notification.permission === "granted") {
+                new Notification("Task Reminder", {
+                    body: task.text,
+                    icon: "path/to/icon.png" // Add your icon path here
+                });
+            } else if (Notification.permission !== "denied") {
+                Notification.requestPermission().then(permission => {
+                    if (permission === "granted") {
+                        new Notification("Task Reminder", {
+                            body: task.text,
+                            icon: "path/to/icon.png" // Add your icon path here
+                        });
+                    }
+                });
+            }
+        }, timeUntilReminder);
     }
-});
+}
 
-setInterval(updateDateTime, 1000);
-updateDateTime();
-renderTasks();
-updateStats();
-animateStats();
-animateTaskList();
+function toggleDarkMode() {
+    document.body.classList.toggle('dark-mode');
+    const isDarkMode = document.body.classList.contains('dark-mode');
+    localStorage.setItem('darkMode', isDarkMode);
+    darkModeToggle.innerHTML = isDarkMode ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
+}
+
+// Initialize
+function init() {
+    // Check for saved dark mode preference
+    if (localStorage.getItem('darkMode') === 'true') {
+        document.body.classList.add('dark-mode');
+        darkModeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+    }
+
+    // Check for logged in user
+    const storedUser = localStorage.getItem('currentUser');
+    if (storedUser) {
+        currentUser = JSON.parse(storedUser);
+        showMainApp();
+    } else {
+        showAuthPage();
+    }
+
+    setInterval(updateDateTime, 1000);
+    updateDateTime();
+
+    // Request notification permission
+    if (Notification.permission !== "granted" && Notification.permission !== "denied") {
+        Notification.requestPermission();
+    }
+}
+
+// Call init function when the page loads
+window.addEventListener('load', init);
