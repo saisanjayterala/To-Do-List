@@ -1,36 +1,42 @@
 body {
-    font-family: Arial, sans-serif;
+    font-family: 'Arial', sans-serif;
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 100vh;
+    min-height: 100vh;
     margin: 0;
-    background-color: #f0f0f0;
+    background-color: #f4f4f4;
 }
 
 .container {
     background-color: white;
-    padding: 20px;
-    border-radius: 5px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    width: 300px;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    width: 400px;
 }
 
 h1 {
     text-align: center;
     color: #333;
+    margin-bottom: 20px;
 }
 
 .input-container {
     display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
     margin-bottom: 20px;
 }
 
-input[type="text"] {
+input[type="text"],
+input[type="date"],
+select {
     flex-grow: 1;
     padding: 10px;
     border: 1px solid #ddd;
-    border-radius: 4px 0 0 4px;
+    border-radius: 4px;
+    font-size: 14px;
 }
 
 button {
@@ -38,12 +44,24 @@ button {
     background-color: #4CAF50;
     color: white;
     border: none;
-    border-radius: 0 4px 4px 0;
+    border-radius: 4px;
     cursor: pointer;
+    transition: background-color 0.3s;
 }
 
 button:hover {
     background-color: #45a049;
+}
+
+.filter-container {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.filter-container button {
+    flex-grow: 1;
+    margin: 0 5px;
 }
 
 ul {
@@ -56,29 +74,51 @@ li {
     align-items: center;
     padding: 10px;
     background-color: #f9f9f9;
-    margin-bottom: 5px;
+    margin-bottom: 10px;
     border-radius: 4px;
+    transition: background-color 0.3s;
 }
 
 li:hover {
     background-color: #f0f0f0;
 }
 
-li.completed {
+li span {
+    flex-grow: 1;
+    margin-right: 10px;
+}
+
+li .completed {
     text-decoration: line-through;
     color: #888;
 }
 
-.delete-btn {
-    margin-left: auto;
-    background-color: #f44336;
-    color: white;
-    border: none;
-    padding: 5px 10px;
-    border-radius: 3px;
-    cursor: pointer;
+li .due-date {
+    font-size: 12px;
+    color: #666;
 }
 
-.delete-btn:hover {
-    background-color: #d32f2f;
+li .priority {
+    font-size: 12px;
+    padding: 2px 5px;
+    border-radius: 3px;
+    text-transform: capitalize;
+}
+
+li .priority.low { background-color: #4CAF50; color: white; }
+li .priority.medium { background-color: #FFC107; color: black; }
+li .priority.high { background-color: #F44336; color: white; }
+
+li button {
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    padding: 5px;
+    color: #666;
+    transition: color 0.3s;
+}
+
+li button:hover {
+    color: #333;
 }
