@@ -1,4 +1,3 @@
-// script.js
 let currentUser = null;
 let tasks = [];
 
@@ -105,13 +104,12 @@ function addTask() {
         renderTasks();
         updateStats();
         
-        // Animate new task
         const newTaskElement = document.querySelector('#taskList li:last-child');
         gsap.from(newTaskElement, {
             opacity: 0,
-            y: 20,
+            y: 50,
             duration: 0.5,
-            ease: "power2.out"
+            ease: "back.out(1.7)"
         });
 
         taskInput.value = '';
@@ -158,6 +156,14 @@ function renderTasks(filteredTasks = tasks) {
             </div>
         `;
         taskList.appendChild(li);
+        
+        gsap.from(li, {
+            opacity: 0,
+            y: 20,
+            duration: 0.5,
+            ease: "power2.out",
+            stagger: 0.1
+        });
     });
 
     // Initialize drag and drop
@@ -181,10 +187,10 @@ function toggleTask(id) {
         renderTasks();
         updateStats();
 
-        // Animate task completion
         const taskElement = document.querySelector(`[onclick="toggleTask(${id})"]`).closest('li');
         gsap.to(taskElement, {
-            backgroundColor: task.completed ? 'rgba(232, 245, 233, 0.8)' : 'rgba(255, 255, 255, 0.8)',
+            backgroundColor: task.completed ? 'rgba(46, 204, 113, 0.2)' : 'rgba(255, 255, 255, 0.8)',
+            scale: task.completed ? 0.95 : 1,
             duration: 0.3,
             ease: "power2.inOut"
         });
@@ -204,7 +210,6 @@ function editTask(id) {
             saveTasks();
             renderTasks();
 
-            // Animate edited task
             const taskElement = document.querySelector(`[onclick="editTask(${id})"]`).closest('li');
             gsap.from(taskElement, {
                 scale: 1.05,
@@ -218,10 +223,10 @@ function editTask(id) {
 function deleteTask(id) {
     const taskElement = document.querySelector(`[onclick="deleteTask(${id})"]`).closest('li');
     
-    // Animate task removal
     gsap.to(taskElement, {
         opacity: 0,
         x: 100,
+        rotationZ: 5,
         duration: 0.5,
         ease: "power2.in",
         onComplete: () => {
@@ -260,7 +265,6 @@ function setActiveFilter(filter) {
     buttons.forEach(btn => btn.classList.remove('active'));
     document.querySelector(`button[onclick="filterTasks('${filter}')"]`).classList.add('active');
 }
-
 function searchTasks() {
     const searchTerm = document.getElementById('searchInput').value.toLowerCase();
     const filteredTasks = tasks.filter(task => 
@@ -356,6 +360,16 @@ function toggleDarkMode() {
 
 // Initialize
 function init() {
+    const loadingScreen = document.getElementById('loading-screen');
+    gsap.to(loadingScreen, {
+        opacity: 0,
+        duration: 0.5,
+        delay: 1,
+        onComplete: () => {
+            loadingScreen.style.display = 'none';
+        }
+    });
+
     // Check for saved dark mode preference
     if (localStorage.getItem('darkMode') === 'true') {
         document.body.classList.add('dark-mode');
