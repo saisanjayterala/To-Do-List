@@ -39,91 +39,6 @@ body {
 .hidden {
   display: none !important;
 }
-/* 
-.auth-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh;
-  background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
-  padding: 2rem;
-}
-
-.auth-box {
-  background-color: var(--card-background);
-  padding: 3rem;
-  border-radius: 12px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-  width: 100%;
-  max-width: 400px;
-  transition: all 0.3s ease;
-}
-
-.auth-box h2 {
-  text-align: center;
-  color: var(--primary-color);
-  margin-bottom: 2rem;
-}
-
-.auth-tabs {
-  display: flex;
-  justify-content: center;
-  margin-bottom: 2rem;
-}
-
-.auth-tabs button {
-  background: none;
-  border: none;
-  color: var(--text-color);
-  font-size: 1rem;
-  padding: 0.5rem 1rem;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.auth-tabs button.active {
-  color: var(--primary-color);
-  border-bottom: 2px solid var(--primary-color);
-}
-
-.auth-box form {
-  display: flex;
-  flex-direction: column;
-}
-
-.auth-box input {
-  margin-bottom: 1rem;
-  padding: 0.75rem;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  font-size: 1rem;
-  transition: border-color 0.3s ease;
-}
-
-.auth-box input:focus {
-  border-color: var(--primary-color);
-  outline: none;
-}
-
-.auth-box button {
-  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-  color: white;
-  padding: 0.75rem;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  font-size: 1rem;
-  font-weight: bold;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-}
-
-.auth-box button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-} */
-
 
 .auth-container {
   display: flex;
@@ -212,7 +127,7 @@ body {
 .auth-box button:hover {
   background-color: #3a7cbd;
 }
-/* Main App Styles */
+
 nav {
   background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
   color: white;
@@ -323,6 +238,7 @@ h1 {
   font-size: 1rem;
   transition: border-color 0.3s ease;
 }
+
 .task-input-container input:focus,
 .task-input-container select:focus,
 .task-input-container textarea:focus {
@@ -496,12 +412,10 @@ h1 {
   color: #777;
 }
 
-/* Calendar View Styles */
 #calendar-view {
   height: 600px;
 }
 
-/* Analytics View Styles */
 .analytics-container {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -523,7 +437,6 @@ h1 {
   color: var(--primary-color);
 }
 
-/* Loading Screen */
 .loading-screen {
   position: fixed;
   top: 0;
@@ -551,7 +464,6 @@ h1 {
   100% { transform: rotate(360deg); }
 }
 
-/* Responsive Design */
 @media (max-width: 768px) {
   .app-container {
     padding: 1rem;

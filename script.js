@@ -1,7 +1,6 @@
 let currentUser = null;
 let tasks = [];
 
-// DOM Elements
 const authPage = document.getElementById('auth-page');
 const mainApp = document.getElementById('main-app');
 const loginForm = document.getElementById('login-form');
@@ -19,7 +18,6 @@ const taskView = document.getElementById('task-view');
 const calendarView = document.getElementById('calendar-view');
 const analyticsView = document.getElementById('analytics-view');
 
-// Event Listeners
 loginForm.addEventListener('submit', handleLogin);
 registerForm.addEventListener('submit', handleRegister);
 loginTab.addEventListener('click', () => showAuthForm('login'));
@@ -30,7 +28,6 @@ taskViewBtn.addEventListener('click', () => switchView('task'));
 calendarViewBtn.addEventListener('click', () => switchView('calendar'));
 analyticsViewBtn.addEventListener('click', () => switchView('analytics'));
 
-// Flatpickr Initialization
 flatpickr("#dueDateInput", {
     enableTime: true,
     dateFormat: "Y-m-d H:i",
@@ -41,7 +38,6 @@ flatpickr("#reminderInput", {
     dateFormat: "Y-m-d H:i",
 });
 
-// Auth Functions
 function handleLogin(e) {
     e.preventDefault();
     const email = document.getElementById('login-email').value;
@@ -114,7 +110,6 @@ function showMainApp() {
     renderAnalytics();
 }
 
-// Task Management Functions
 function addTask() {
     const taskInput = document.getElementById('taskInput');
     const dueDateInput = document.getElementById('dueDateInput');
@@ -143,12 +138,12 @@ function addTask() {
         updateCalendar();
         renderAnalytics();
         
-        document.getElementById('taskInput').value = '';
-        document.getElementById('dueDateInput').value = '';
-        document.getElementById('priorityInput').value = 'low';
-        document.getElementById('categoryInput').value = 'personal';
-        document.getElementById('reminderInput').value = '';
-        document.getElementById('taskNotes').value = '';
+        taskInput.value = '';
+        dueDateInput.value = '';
+        priorityInput.value = 'low';
+        categoryInput.value = 'personal';
+        reminderInput.value = '';
+        taskNotes.value = '';
 
         if (task.reminder) {
             scheduleReminder(task);
@@ -192,7 +187,6 @@ function renderTasks(filteredTasks = tasks) {
         taskList.appendChild(li);
     });
 
-    // Initialize drag and drop
     new Sortable(taskList, {
         animation: 150,
         onEnd: function(evt) {
@@ -340,14 +334,14 @@ function scheduleReminder(task) {
             if (Notification.permission === "granted") {
                 new Notification("Task Reminder", {
                     body: task.text,
-                    icon: "path/to/icon.png" // Add your icon path here
+                    icon: "path/to/icon.png" 
                 });
             } else if (Notification.permission !== "denied") {
                 Notification.requestPermission().then(permission => {
                     if (permission === "granted") {
                         new Notification("Task Reminder", {
                             body: task.text,
-                            icon: "path/to/icon.png" // Add your icon path here
+                            icon: "path/to/icon.png" 
                         });
                     }
                 });
@@ -363,7 +357,6 @@ function toggleDarkMode() {
     darkModeToggle.innerHTML = isDarkMode ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
 }
 
-// Calendar Functions
 function initializeCalendar() {
     const calendarEl = document.getElementById('calendar');
     const calendar = new FullCalendar.Calendar(calendarEl, {
@@ -408,7 +401,6 @@ function updateCalendar() {
     }
 }
 
-// Analytics Functions
 function renderAnalytics() {
     renderTaskCompletionChart();
     renderCategoryDistributionChart();
@@ -495,7 +487,6 @@ function switchView(view) {
     }
 }
 
-// Initialize
 function init() {
     const loadingScreen = document.getElementById('loading-screen');
     gsap.to(loadingScreen, {
@@ -507,13 +498,11 @@ function init() {
         }
     });
 
-    // Check for saved dark mode preference
     if (localStorage.getItem('darkMode') === 'true') {
         document.body.classList.add('dark-mode');
         darkModeToggle.innerHTML = '<i class="fas fa-sun"></i>';
     }
 
-    // Check for logged in user
     const storedUser = localStorage.getItem('currentUser');
     if (storedUser) {
         currentUser = JSON.parse(storedUser);
@@ -525,11 +514,9 @@ function init() {
     setInterval(updateDateTime, 1000);
     updateDateTime();
 
-    // Request notification permission
     if (Notification.permission !== "granted" && Notification.permission !== "denied") {
         Notification.requestPermission();
     }
 }
 
-// Call init function when the page loads
 window.addEventListener('load', init);
