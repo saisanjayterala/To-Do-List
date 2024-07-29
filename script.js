@@ -11,6 +11,7 @@ const showLoginLink = document.getElementById('show-login');
 const logoutBtn = document.getElementById('logout-btn');
 const userNameSpan = document.getElementById('user-name');
 const darkModeToggle = document.getElementById('darkModeToggle');
+const taskList = document.getElementById('taskList');
 
 // Event Listeners
 loginForm.addEventListener('submit', handleLogin);
@@ -104,14 +105,6 @@ function addTask() {
         renderTasks();
         updateStats();
         
-        const newTaskElement = document.querySelector('#taskList li:last-child');
-        gsap.from(newTaskElement, {
-            opacity: 0,
-            y: 50,
-            duration: 0.5,
-            ease: "back.out(1.7)"
-        });
-
         taskInput.value = '';
         dueDateInput.value = '';
         priorityInput.value = 'low';
@@ -126,7 +119,6 @@ function addTask() {
 }
 
 function renderTasks(filteredTasks = tasks) {
-    const taskList = document.getElementById('taskList');
     taskList.innerHTML = '';
     
     filteredTasks.forEach(task => {
@@ -265,6 +257,7 @@ function setActiveFilter(filter) {
     buttons.forEach(btn => btn.classList.remove('active'));
     document.querySelector(`button[onclick="filterTasks('${filter}')"]`).classList.add('active');
 }
+
 function searchTasks() {
     const searchTerm = document.getElementById('searchInput').value.toLowerCase();
     const filteredTasks = tasks.filter(task => 
