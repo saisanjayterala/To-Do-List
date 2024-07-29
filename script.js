@@ -143,16 +143,18 @@ function addTask() {
         updateCalendar();
         renderAnalytics();
         
-        taskInput.value = '';
-        dueDateInput.value = '';
-        priorityInput.value = 'low';
-        categoryInput.value = 'personal';
-        reminderInput.value = '';
-        taskNotes.value = '';
+        document.getElementById('taskInput').value = '';
+        document.getElementById('dueDateInput').value = '';
+        document.getElementById('priorityInput').value = 'low';
+        document.getElementById('categoryInput').value = 'personal';
+        document.getElementById('reminderInput').value = '';
+        document.getElementById('taskNotes').value = '';
 
         if (task.reminder) {
             scheduleReminder(task);
         }
+        flatpickr("#dueDateInput").clear();
+        flatpickr("#reminderInput").clear();
 
         showConfetti();
     }
@@ -323,7 +325,8 @@ function showConfetti() {
     confetti({
         particleCount: 100,
         spread: 70,
-        origin: { y: 0.6 }
+        origin: { y: 0.6 },
+        colors: ['#4a90e2', '#50e3c2', '#f39c12']
     });
 }
 
@@ -371,7 +374,7 @@ function initializeCalendar() {
             right: 'dayGridMonth,timeGridWeek,timeGridDay'
         },
         events: tasks.map(task => ({
-            id: task.id,
+            id: task.id.toString(),
             title: task.text,
             start: task.dueDate,
             allDay: true,
@@ -385,8 +388,8 @@ function initializeCalendar() {
         }
     });
     calendar.render();
+    calendarEl.fullCalendar = calendar;
 }
-
 function updateCalendar() {
     const calendarEl = document.getElementById('calendar');
     if (calendarEl) {
@@ -394,12 +397,13 @@ function updateCalendar() {
         if (calendar) {
             calendar.removeAllEvents();
             calendar.addEventSource(tasks.map(task => ({
-                id: task.id,
+                id: task.id.toString(),
                 title: task.text,
                 start: task.dueDate,
                 allDay: true,
                 backgroundColor: task.completed ? '#27ae60' : '#3498db'
             })));
+            calendar.refetchEvents();
         }
     }
 }
