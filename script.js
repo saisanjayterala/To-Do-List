@@ -6,20 +6,40 @@ const authPage = document.getElementById('auth-page');
 const mainApp = document.getElementById('main-app');
 const loginForm = document.getElementById('login-form');
 const registerForm = document.getElementById('register-form');
-const showRegisterLink = document.getElementById('show-register');
-const showLoginLink = document.getElementById('show-login');
+const loginTab = document.getElementById('login-tab');
+const registerTab = document.getElementById('register-tab');
 const logoutBtn = document.getElementById('logout-btn');
 const userNameSpan = document.getElementById('user-name');
 const darkModeToggle = document.getElementById('darkModeToggle');
 const taskList = document.getElementById('taskList');
+const taskViewBtn = document.getElementById('task-view-btn');
+const calendarViewBtn = document.getElementById('calendar-view-btn');
+const analyticsViewBtn = document.getElementById('analytics-view-btn');
+const taskView = document.getElementById('task-view');
+const calendarView = document.getElementById('calendar-view');
+const analyticsView = document.getElementById('analytics-view');
 
 // Event Listeners
 loginForm.addEventListener('submit', handleLogin);
 registerForm.addEventListener('submit', handleRegister);
-showRegisterLink.addEventListener('click', toggleAuthForms);
-showLoginLink.addEventListener('click', toggleAuthForms);
+loginTab.addEventListener('click', () => showAuthForm('login'));
+registerTab.addEventListener('click', () => showAuthForm('register'));
 logoutBtn.addEventListener('click', handleLogout);
 darkModeToggle.addEventListener('click', toggleDarkMode);
+taskViewBtn.addEventListener('click', () => switchView('task'));
+calendarViewBtn.addEventListener('click', () => switchView('calendar'));
+analyticsViewBtn.addEventListener('click', () => switchView('analytics'));
+
+// Flatpickr Initialization
+flatpickr("#dueDateInput", {
+    enableTime: true,
+    dateFormat: "Y-m-d H:i",
+});
+
+flatpickr("#reminderInput", {
+    enableTime: true,
+    dateFormat: "Y-m-d H:i",
+});
 
 // Auth Functions
 function handleLogin(e) {
@@ -59,9 +79,11 @@ function handleLogout() {
     showAuthPage();
 }
 
-function toggleAuthForms() {
-    document.getElementById('login-form').parentElement.classList.toggle('hidden');
-    document.getElementById('register-box').classList.toggle('hidden');
+function showAuthForm(form) {
+    loginForm.classList.toggle('hidden', form !== 'login');
+    registerForm.classList.toggle('hidden', form !== 'register');
+    loginTab.classList.toggle('active', form === 'login');
+    registerTab.classList.toggle('active', form === 'register');
 }
 
 function showAuthPage() {
@@ -76,6 +98,8 @@ function showMainApp() {
     loadTasks();
     renderTasks();
     updateStats();
+    initializeCalendar();
+    renderAnalytics();
 }
 
 // Task Management Functions
@@ -104,6 +128,8 @@ function addTask() {
         saveTasks();
         renderTasks();
         updateStats();
+        updateCalendar();
+        renderAnalytics();
         
         taskInput.value = '';
         dueDateInput.value = '';
@@ -115,6 +141,8 @@ function addTask() {
         if (task.reminder) {
             scheduleReminder(task);
         }
+
+        showConfetti();
     }
 }
 
@@ -148,14 +176,6 @@ function renderTasks(filteredTasks = tasks) {
             </div>
         `;
         taskList.appendChild(li);
-        
-        gsap.from(li, {
-            opacity: 0,
-            y: 20,
-            duration: 0.5,
-            ease: "power2.out",
-            stagger: 0.1
-        });
     });
 
     // Initialize drag and drop
@@ -178,14 +198,8 @@ function toggleTask(id) {
         saveTasks();
         renderTasks();
         updateStats();
-
-        const taskElement = document.querySelector(`[onclick="toggleTask(${id})"]`).closest('li');
-        gsap.to(taskElement, {
-            backgroundColor: task.completed ? 'rgba(46, 204, 113, 0.2)' : 'rgba(255, 255, 255, 0.8)',
-            scale: task.completed ? 0.95 : 1,
-            duration: 0.3,
-            ease: "power2.inOut"
-        });
+        updateCalendar();
+        renderAnalytics();
 
         if (task.completed) {
             showConfetti();
@@ -201,33 +215,19 @@ function editTask(id) {
             task.text = newText;
             saveTasks();
             renderTasks();
-
-            const taskElement = document.querySelector(`[onclick="editTask(${id})"]`).closest('li');
-            gsap.from(taskElement, {
-                scale: 1.05,
-                duration: 0.3,
-                ease: "elastic.out(1, 0.5)"
-            });
+            updateCalendar();
+            renderAnalytics();
         }
     }
 }
 
 function deleteTask(id) {
-    const taskElement = document.querySelector(`[onclick="deleteTask(${id})"]`).closest('li');
-    
-    gsap.to(taskElement, {
-        opacity: 0,
-        x: 100,
-        rotationZ: 5,
-        duration: 0.5,
-        ease: "power2.in",
-        onComplete: () => {
-            tasks = tasks.filter(t => t.id !== id);
-            saveTasks();
-            renderTasks();
-            updateStats();
-        }
-    });
+    tasks = tasks.filter(t => t.id !== id);
+    saveTasks();
+    renderTasks();
+    updateStats();
+    updateCalendar();
+    renderAnalytics();
 }
 
 function filterTasks(filter) {
@@ -243,19 +243,12 @@ function filterTasks(filter) {
             filteredTasks = tasks;
     }
     renderTasks(filteredTasks);
-    setActiveFilter(filter);
 }
 
 function filterByCategory() {
     const category = document.getElementById('categoryFilter').value;
     const filteredTasks = category === 'all' ? tasks : tasks.filter(t => t.category === category);
     renderTasks(filteredTasks);
-}
-
-function setActiveFilter(filter) {
-    const buttons = document.querySelectorAll('.filter-container button');
-    buttons.forEach(btn => btn.classList.remove('active'));
-    document.querySelector(`button[onclick="filterTasks('${filter}')"]`).classList.add('active');
 }
 
 function searchTasks() {
