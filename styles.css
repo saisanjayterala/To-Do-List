@@ -236,7 +236,6 @@ h1 {
   font-size: 1rem;
   transition: border-color 0.3s ease;
 }
-
 .task-input-container input:focus,
 .task-input-container select:focus,
 .task-input-container textarea:focus {

@@ -47,11 +47,16 @@ function handleLogin(e) {
     const email = document.getElementById('login-email').value;
     const password = document.getElementById('login-password').value;
     
-    // Simulating a successful login
-    currentUser = { name: 'John Doe', email: email };
-    localStorage.setItem('currentUser', JSON.stringify(currentUser));
+    const users = JSON.parse(localStorage.getItem('users')) || [];
+    const user = users.find(u => u.email === email && u.password === password);
     
-    showMainApp();
+    if (user) {
+        currentUser = user;
+        localStorage.setItem('currentUser', JSON.stringify(currentUser));
+        showMainApp();
+    } else {
+        alert('Invalid email or password');
+    }
 }
 
 function handleRegister(e) {
@@ -66,11 +71,18 @@ function handleRegister(e) {
         return;
     }
     
-    // Simulating a successful registration
-    currentUser = { name: name, email: email };
-    localStorage.setItem('currentUser', JSON.stringify(currentUser));
+    const users = JSON.parse(localStorage.getItem('users')) || [];
+    if (users.some(u => u.email === email)) {
+        alert('Email already registered');
+        return;
+    }
     
-    showMainApp();
+    const newUser = { name, email, password };
+    users.push(newUser);
+    localStorage.setItem('users', JSON.stringify(users));
+    
+    alert('Registration successful. Please log in.');
+    showAuthForm('login');
 }
 
 function handleLogout() {
@@ -282,13 +294,17 @@ function animateNumber(elementId, finalValue) {
     });
 }
 
-function saveTasks() {
-    localStorage.setItem(`tasks_${currentUser.email}`, JSON.stringify(tasks));
-}
-
 function loadTasks() {
     const storedTasks = localStorage.getItem(`tasks_${currentUser.email}`);
     tasks = storedTasks ? JSON.parse(storedTasks) : [];
+    renderTasks();
+    updateStats();
+    updateCalendar();
+    renderAnalytics();
+}
+
+function saveTasks() {
+    localStorage.setItem(`tasks_${currentUser.email}`, JSON.stringify(tasks));
 }
 
 function formatDate(dateString) {
@@ -342,6 +358,137 @@ function toggleDarkMode() {
     const isDarkMode = document.body.classList.contains('dark-mode');
     localStorage.setItem('darkMode', isDarkMode);
     darkModeToggle.innerHTML = isDarkMode ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
+}
+
+// Calendar Functions
+function initializeCalendar() {
+    const calendarEl = document.getElementById('calendar');
+    const calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'dayGridMonth',
+        headerToolbar: {
+            left: 'prev,next today',
+            center: 'title',
+            right: 'dayGridMonth,timeGridWeek,timeGridDay'
+        },
+        events: tasks.map(task => ({
+            id: task.id,
+            title: task.text,
+            start: task.dueDate,
+            allDay: true,
+            backgroundColor: task.completed ? '#27ae60' : '#3498db'
+        })),
+        eventClick: function(info) {
+            const task = tasks.find(t => t.id === parseInt(info.event.id));
+            if (task) {
+                alert(`Task: ${task.text}\nDue Date: ${formatDate(task.dueDate)}\nStatus: ${task.completed ? 'Completed' : 'Pending'}`);
+            }
+        }
+    });
+    calendar.render();
+}
+
+function updateCalendar() {
+    const calendarEl = document.getElementById('calendar');
+    if (calendarEl) {
+        const calendar = calendarEl.fullCalendar;
+        if (calendar) {
+            calendar.removeAllEvents();
+            calendar.addEventSource(tasks.map(task => ({
+                id: task.id,
+                title: task.text,
+                start: task.dueDate,
+                allDay: true,
+                backgroundColor: task.completed ? '#27ae60' : '#3498db'
+            })));
+        }
+    }
+}
+
+// Analytics Functions
+function renderAnalytics() {
+    renderTaskCompletionChart();
+    renderCategoryDistributionChart();
+    updateProductivityScore();
+}
+
+function renderTaskCompletionChart() {
+    const ctx = document.getElementById('taskCompletionChart').getContext('2d');
+    const completedTasks = tasks.filter(t => t.completed).length;
+    const pendingTasks = tasks.length - completedTasks;
+
+    new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Completed', 'Pending'],
+            datasets: [{
+                data: [completedTasks, pendingTasks],
+                backgroundColor: ['#27ae60', '#e74c3c']
+            }]
+        },
+        options: {
+            responsive: true,
+            title: {
+                display: true,
+                text: 'Task Completion Status'
+            }
+        }
+    });
+}
+
+function renderCategoryDistributionChart() {
+    const ctx = document.getElementById('categoryDistributionChart').getContext('2d');
+    const categories = ['personal', 'work', 'shopping', 'other'];
+    const categoryData = categories.map(category => tasks.filter(t => t.category === category).length);
+
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: categories,
+            datasets: [{
+                label: 'Number of Tasks',
+                data: categoryData,
+                backgroundColor: ['#3498db', '#e67e22', '#9b59b6', '#34495e']
+            }]
+        },
+        options: {
+            responsive: true,
+            title: {
+                display: true,
+                text: 'Task Distribution by Category'
+            },
+            scales: {
+                yAxes: [{
+                    ticks: {
+                        beginAtZero: true
+                    }
+                }]
+            }
+        }
+    });
+}
+
+function updateProductivityScore() {
+    const completedTasks = tasks.filter(t => t.completed).length;
+    const totalTasks = tasks.length;
+    const productivityScore = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+    
+    document.getElementById('productivityScore').textContent = `${productivityScore}%`;
+}
+
+function switchView(view) {
+    taskView.classList.toggle('hidden', view !== 'task');
+    calendarView.classList.toggle('hidden', view !== 'calendar');
+    analyticsView.classList.toggle('hidden', view !== 'analytics');
+
+    taskViewBtn.classList.toggle('active', view === 'task');
+    calendarViewBtn.classList.toggle('active', view === 'calendar');
+    analyticsViewBtn.classList.toggle('active', view === 'analytics');
+
+    if (view === 'calendar') {
+        initializeCalendar();
+    } else if (view === 'analytics') {
+        renderAnalytics();
+    }
 }
 
 // Initialize
